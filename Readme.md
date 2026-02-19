@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🎬 AutoContent Factory
+# 🎬 ViralContent Factory
 
 ### *Autonomous AI-Powered Viral Content Generation Pipeline*
 
@@ -19,7 +19,7 @@
 
 ## 🚀 Overview
 
-**AutoContent Factory** is an end-to-end automated content generation system that transforms Reddit stories into professionally edited, viral-ready short-form videos for TikTok, YouTube Shorts, and Instagram Reels. The pipeline handles everything from content discovery to final video rendering with zero manual intervention.
+**ViralContent Factory** is an end-to-end automated content generation system that transforms Reddit stories into professionally edited, viral-ready short-form videos for TikTok, YouTube Shorts, and Instagram Reels. The pipeline handles everything from content discovery to final video rendering with zero manual intervention.
 
 ### 💡 What Makes This Special?
 
@@ -103,7 +103,7 @@
 ### 📁 Project Structure
 
 ```
-AutoContent/
+ViralContent/
 ├── 📜 main_pipeline.py      # Orchestrator - coordinates all phases
 ├── 🔍 phase1.py             # Content acquisition & AI processing
 ├── 🎙️ phase2.py             # Audio synthesis & timestamp extraction
@@ -151,8 +151,8 @@ AutoContent/
 ### Step 1: Clone the Repository
 
 ```bash
-git clone https://github.com/indiser/autocontent-factory.git
-cd autocontent-factory
+git clone https://github.com/indiser/ViralContent-factory.git
+cd ViralContent-factory
 ```
 
 ### Step 2: Install Python Dependencies
