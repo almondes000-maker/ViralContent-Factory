@@ -4,8 +4,10 @@ import random
 import os
 import re
 import asyncio
+import html
 from dotenv import load_dotenv
 from langdetect import detect, LangDetectException
+from llm_router import chat_fast, chat_strong
 
 load_dotenv()
 
@@ -32,23 +34,54 @@ SUBREDDITS = [
     "AITAH",               # The uncensored alternative to AITA
     "TrueOffMyChest",
     "confessions",
+    "confession",
     "tifu",
     "pettyrevenge",        # High-satisfaction payoff stories
     "entitledparents",     # Massive engagement and rage-bait
     "MaliciousCompliance", # Clever revenge stories
     "EntitledPeople",
-    "relationships"
+    "relationships",
+    "relationship_advice",
+    "Vent",
+    "stories",
+    "moraldilemmas",
+    "EntitledPeople",
+    "self",
+    "PointlessStories",
+    "TwoHotTakes",
+    "dating",
+    "offmychest",
+    "UnsentLetters",
+    "SeriousConversation",
+    "Adulting",
+    "lonely",
+    "BreakUps",
+    "TalesFromTheFrontDesk",
+    "legaladvice",
+    "RBI",
+    "UnresolvedMysteries",
+    "Glitch_in_the_Matrix",
+    "raisedbynarcissists",
+    "dadjokes",
+    "Jokes"
 ]
+
 headers = {
     "User-Agent": "Python:BrainrotBot:v1.1 (by /u/YourRedditUsername)"
 }
 
 
 def sanitize_text(raw_text: str) -> str:
+    text=html.unescape(raw_text)
     # 1. Strip rogue URLs first
     text = re.sub(r'http\S+', '', raw_text)
+    text = re.sub(r'\b[ru]/[A-Za-z0-9_-]+\b', '', text)
     text = re.sub(r'(?i)\bTL;?DR\b.*', '', text, flags=re.DOTALL)
-    text = re.sub(r'[*_~]', '', text)
+    text = re.sub(r'(?i)\bEdit:? ?\d?\b.*', '', text, flags=re.DOTALL)
+    text = re.sub(r'(?i)\bUpdate:? ?\d?\b.*', '', text, flags=re.DOTALL)
+    text = re.sub(r'[*_~•▪●\t]', ' ', text)
+    text = re.sub(r' +', ' ', text).strip()
+
     # 2. Dynamic Age/Gender Translation (e.g., "19F" -> "a 19 year old female")
     text = re.sub(r'\b(\d{2})[Ff]\b', r'a \1 year old woman', text)
     text = re.sub(r'\b(\d{2})[Mm]\b', r'a \1 year old man', text)
@@ -65,7 +98,6 @@ def sanitize_text(raw_text: str) -> str:
         "MC": "Malicious compliance",
         "gf": "girlfriend",
         "bf": "boyfriend",
-        # "SO": "significant other",
         "MIL": "mother in law",
         "FIL": "father in law",
         "SIL": "sister in law",
@@ -107,26 +139,10 @@ def rank_best_hook(original_title: str, ai_hook: str) -> str:
     )
     
     user_prompt = f"Option A: {original_title}\n\nOption B: {ai_hook}"
-    
+
+
     try:
-        response = requests.post(
-            url="https://openrouter.ai/api/v1/chat/completions",
-            headers={
-                "Authorization": f"Bearer {OPENROUTER_API_KEY}",
-                "Content-Type": "application/json"
-            },
-            json={
-                "model": "openrouter/free", # Using a fast, free model for the judge
-                "messages": [
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": user_prompt}
-                ],
-                "temperature": 0.0 # Zero creativity. We want a cold, calculated judgment.
-            }
-        )
-        response.raise_for_status()
-        
-        winner = response.json()["choices"][0]["message"]["content"].strip().upper()
+        winner = chat_fast(system_prompt, user_prompt).strip().upper()
         
         if winner == "A":
             print(f"JUDGE DECISION: Human Title Wins.")
@@ -135,12 +151,36 @@ def rank_best_hook(original_title: str, ai_hook: str) -> str:
             print(f"JUDGE DECISION: AI Hook Wins.")
             return ai_hook
         else:
-            return ai_hook # Failsafe
-            
+            return ai_hook 
     except Exception as e:
         print(f"Hook Ranking Failed: {e}. Defaulting to AI Hook.")
         return ai_hook
 
+def generate_seo_tags(story_text: str) -> list:
+    """Forces the LLM to extract exactly 5 hyper-relevant SEO keywords."""
+    context_chunk = story_text[:1000]
+    
+    system_prompt = (
+        "You are an expert YouTube SEO strategist. Read the following story context and extract exactly 5 highly relevant keywords for YouTube tags. "
+        "RULES:\n"
+        "1. Output ONLY a comma-separated list of 5 words or short phrases.\n"
+        "2. Do NOT use hashtags (#).\n"
+        "3. Always include 'reddit' and 'storytime' as two of the tags.\n"
+        "4. No introductory text, no quotes, no explanations."
+    )
+    user_prompt = context_chunk
+
+    try:
+        raw_tags = chat_fast(system_prompt, user_prompt)
+        tag_list = [tag.strip().strip('"\'') for tag in raw_tags.split(',')]
+        
+        if len(tag_list) < 2:
+            raise ValueError("LLM returned malformed tags.")
+        return tag_list
+    except Exception as e:
+        print(f"SEO Tag Generation Failed: {e}. Defaulting to static tags.")
+        return ["reddit", "storytime", "aita", "drama", "redditstories"]
+    
 def detect_gender_llm(title: str, story_text: str) -> str:
     """Uses a free LLM to semantically infer the narrator's gender."""
     
@@ -155,35 +195,18 @@ def detect_gender_llm(title: str, story_text: str) -> str:
         "If it is completely ambiguous, guess based on the statistical likelihood of the writing style. "
         "YOU MUST REPLY WITH EXACTLY ONE LETTER: 'M' for Male, or 'F' for Female. DO NOT OUTPUT ANY OTHER TEXT."
     )
-    
+
+    user_prompt = f"Title: {title}\n\nStory: {context_chunk}"
+
+
     try:
-        response = requests.post(
-            url="https://openrouter.ai/api/v1/chat/completions",
-            headers={
-                "Authorization": f"Bearer {OPENROUTER_API_KEY}",
-                "Content-Type": "application/json"
-            },
-            data=json.dumps({
-                "model": "openrouter/free",
-                "messages": [
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": f"Title: {title}\n\nStory: {context_chunk}"}
-                ],
-                "temperature": 0.0 # Force deterministic, non-creative outputs
-            })
-        )
-        response.raise_for_status()
-        
-        # Extract the single letter
-        ai_guess = response.json()["choices"][0]["message"]["content"].strip().upper()
-        
-        # Failsafe: Ensure the LLM didn't disobey instructions
+        # Route to cheap/fast models
+        ai_guess = chat_fast(system_prompt, user_prompt).strip().upper()
         if ai_guess in ["M", "F"]:
             return ai_guess
         else:
             print(f"WARNING: LLM hallucinated an invalid response: {ai_guess}. Defaulting to F.")
             return "F"
-            
     except Exception as e:
         print(f"LLM Gender Detection Failed: {e}. Defaulting to F.")
         return "F"
@@ -202,34 +225,16 @@ def generate_viral_hook(title: str, story_text: str) -> str:
         "3. DO NOT use hashtags, emojis, or quotation marks.\n"
         "4. Output ONLY the hook. Absolutely no other text."
     )
-    
+    user_prompt = f"Title: {title}\n\nStory: {context_chunk}"
+
     try:
-        response = requests.post(
-            url="https://openrouter.ai/api/v1/chat/completions",
-            headers={
-                "Authorization": f"Bearer {OPENROUTER_API_KEY}",
-                "Content-Type": "application/json"
-            },
-            json={
-                "model": "openrouter/free", 
-                "messages": [
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": f"Title: {title}\n\nStory: {context_chunk}"}
-                ],
-                "temperature": 0.7 
-            }
-        )
-        response.raise_for_status()
+        # Route to strong/creative models
+        raw_hook = chat_strong(system_prompt, user_prompt)
+        hook = raw_hook.strip().replace('"', '').replace('*', '')
         
-        # Extract the hook and strip any accidental quotes the LLM tries to add
-        hook = response.json()["choices"][0]["message"]["content"].strip().replace('"', '').replace('*', '')
-        
-        # Failsafe: If the LLM completely hallucinates and writes a paragraph, fallback to the original
         if len(hook.split()) > 20:
             return title
-            
         return hook
-            
     except Exception as e:
         print(f"LLM Hook Generation Failed: {e}. Defaulting to original title.")
         return title
@@ -270,6 +275,7 @@ def fetch_brainrot_story(subreddit_name: str, existing_ids:set ) -> dict:
             pov_gender = detect_gender_llm(title=title,story_text=story)
             ai_generated_hook = generate_viral_hook(title=title, story_text=story)
             winning_hook=rank_best_hook(original_title=title.replace("\n\n"," ").replace("\n"," "),ai_hook=ai_generated_hook)
+            dynamic_tags=generate_seo_tags(story_text=story)
             print(f"Voice assigned: {pov_gender}")
             print(f"Final Hook Selected: {winning_hook}")
             return {
@@ -278,8 +284,9 @@ def fetch_brainrot_story(subreddit_name: str, existing_ids:set ) -> dict:
                 "title": title.replace("\n\n"," ").replace("\n"," "),
                 "hook": winning_hook, 
                 "original_story":original_story,
-                "story": story.replace("\n\n"," ").replace("\n"," "),
+                "story": story.replace("\n\n"," ").replace("\n"," ").replace('\"',"").replace("\\","").replace('/',""),
                 "gender": pov_gender,
+                'tags':dynamic_tags,
                 "url" : url
             }
             
