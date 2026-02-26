@@ -3,11 +3,19 @@ import re
 import json
 import asyncio
 import random
-# Import your custom modules
 from phase1 import fetch_brainrot_story, load_from_local_database, SUBREDDITS, existing_ids, database, file_path
 from phase2 import generate_audio_and_subs
 from phase3 import build_viral_short
 import glob
+import ctypes
+
+def prevent_sleep():
+    if os.name == 'nt':
+        try:
+            ctypes.windll.kernel32.SetThreadExecutionState(0x80000000 | 0x00000001)
+        except: pass
+
+prevent_sleep()
 
 
 BACKGROUND_PATH_LIST=glob.glob("downloads/*.mp4")
