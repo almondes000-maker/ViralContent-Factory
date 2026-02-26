@@ -11,35 +11,6 @@ import moviepy.video.fx.all as vfx # WE NEED THIS FOR THE MATH
 import random
 
 
-# def generate_subtitle_clips(srt_path: str, video_width: int):
-#     """Parses the SRT and builds a list of TextClips."""
-#     print("PARSING SUBTITLE MATRIX...")
-#     subs = pysrt.open(srt_path)
-#     sub_clips = []
-    
-#     for sub in subs:
-#         # Convert SRT time (hours:mins:secs,millisecs) to flat seconds
-#         start_time = sub.start.ordinal / 1000.0
-#         end_time = sub.end.ordinal / 1000.0
-        
-#         # Build the transparent text image
-#         txt_clip = TextClip(
-#             sub.text,
-#             font="Impact", # High visibility, bold font
-#             fontsize=65,
-#             color="white",
-#             stroke_color="black",
-#             stroke_width=3,
-#             method="caption", # Forces text to wrap inside the box
-#             size=(video_width * 0.85, None) # Width is 85% of the screen
-#         )
-        
-#         # Map the exact timestamp and center it on the screen
-#         txt_clip = txt_clip.set_start(start_time).set_end(end_time).set_position(("center", "center"))
-#         sub_clips.append(txt_clip)
-        
-#     return sub_clips
-
 
 def generate_subtitle_clips(json_path: str, video_width: int, video_height: int):
     """Reads word-level telemetry and groups them into perfectly synced chunks."""
@@ -122,7 +93,7 @@ def build_viral_short(background_path: str, audio_path: str, json_path: str, out
         codec="libx264", 
         audio_codec="aac", 
         preset="ultrafast", 
-        threads=4 
+        threads=1 
     )
     
     print(f"PIPELINE COMPLETE: Final output saved to {output_path}")
