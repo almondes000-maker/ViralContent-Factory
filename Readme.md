@@ -24,10 +24,11 @@
 ### 💡 What Makes This Special?
 
 - **🤖 Fully Autonomous**: Set it and forget it. The system runs daily via scheduled tasks
-- **🧠 AI-Powered Intelligence**: LLM-driven gender detection, viral hook generation, and content filtering
+- **🧠 AI-Powered Intelligence**: Multi-provider LLM router with automatic failover across 5+ AI services
 - **🎯 Production-Ready**: Includes failover systems, cold storage backups, and email alerting
 - **⚡ Optimized Performance**: Multi-threaded rendering, smart caching, and resource management
 - **📊 Scalable Architecture**: Modular phase-based design for easy extension and maintenance
+- **🔄 Smart LLM Routing**: Automatic failover between Groq, Cerebras, Gemini, HuggingFace, and OpenRouter
 
 ---
 
@@ -41,10 +42,12 @@
   - Duplicate prevention via persistent database
   - Automatic removal of deleted/removed posts
 - **AI Enhancement**:
-  - LLM-powered gender detection for voice matching
-  - Viral hook generation (transforms boring titles into scroll-stopping openers)
+  - Multi-provider LLM router with automatic quota management
+  - Gender detection for voice matching (fast models)
+  - Viral hook generation with creative reasoning (strong models)
   - Slang/acronym normalization (AITA → "Am I the jerk", etc.)
 - **Failover System**: Falls back to local cold storage if all live sources fail
+- **Upload Automation**: YouTube and Instagram automation modules (in development)
 
 ### 🎙️ **Phase 2: Professional Audio Synthesis**
 - **Edge TTS Integration**: Microsoft's neural voices for natural-sounding narration
@@ -62,12 +65,22 @@
 - **Smart Cropping**: Automatic center-crop from 16:9 to 9:16
 - **Random Start Points**: Prevents repetitive background footage
 
+### 🤖 **LLM Router System**
+- **Multi-Provider Architecture**: Supports 5 AI providers with automatic failover
+- **Intelligent Task Routing**:
+  - Fast models (Gemini, HuggingFace, OpenRouter) for classification and tagging
+  - Strong models (Groq, Cerebras) for creative writing and reasoning
+- **Quota Management**: Automatically detects rate limits and switches providers
+- **Error Recovery**: Retry logic with exponential backoff
+- **Cost Optimization**: Routes cheap tasks to free tiers, expensive tasks to premium models
+
 ### 🔧 **Production Features**
 - **Automated Cleanup**: Removes temporary files after each run
 - **Batch Management**: Collects 7 videos before triggering upload alert
 - **Email Notifications**: Gmail SMTP alerts when batch is ready
 - **Sanitized Filenames**: OS-safe naming with ID-based uniqueness
 - **Error Handling**: Comprehensive try-catch blocks with detailed logging
+- **Video Path Utilities**: Batch processing helpers for upload automation
 
 ---
 
@@ -97,24 +110,35 @@
               ┌───────────────┐
               │  Cleanup &    │
               │  Notification │
+              └───────┬───────┘
+                      │
+                      ▼
+              ┌───────────────┐
+              │   Upload      │
+              │  Automation   │
               └───────────────┘
 ```
 
 ### 📁 Project Structure
 
 ```
-ViralContent/
+ViralContent-Factory/
 ├── 📜 main_pipeline.py      # Orchestrator - coordinates all phases
 ├── 🔍 phase1.py             # Content acquisition & AI processing
 ├── 🎙️ phase2.py             # Audio synthesis & timestamp extraction
 ├── 🎥 phase3.py             # Video composition & rendering
+├── 🤖 llm_router.py         # Multi-provider LLM failover system
 ├── 📥 yt_downloader.py      # Background footage downloader
 ├── 📧 reminder.py           # Batch management & email alerts
+├── 📤 yt_automation.py      # YouTube upload automation (WIP)
+├── 📱 insta_automation.py   # Instagram upload automation (WIP)
+├── 🔧 get_videopaths.py     # Video path utility for batch processing
 ├── ⚙️ run_factory.bat       # Windows Task Scheduler entry point
 ├── 📦 requirements.txt      # Python dependencies
 ├── 🗄️ scripts.json          # Persistent story database
 ├── 🎬 downloads/            # Background video assets
-└── 📤 reels/                # Final rendered videos
+├── 📤 reels/                # Final rendered videos
+└── 📦 ready_to_upload/      # Batched videos ready for upload
 ```
 
 ---
@@ -124,7 +148,7 @@ ViralContent/
 | Category | Technology | Purpose |
 |----------|-----------|---------|
 | **Language** | Python 3.11+ | Core runtime |
-| **AI/LLM** | OpenRouter API | Gender detection & hook generation |
+| **AI/LLM** | Multi-Provider Router | Groq, Cerebras, Gemini, HuggingFace, OpenRouter |
 | **Voice Synthesis** | Edge-TTS | Neural text-to-speech |
 | **Video Processing** | MoviePy 1.0.3 | Compositing & rendering |
 | **Image Processing** | ImageMagick | Text rendering backend |
@@ -151,8 +175,8 @@ ViralContent/
 ### Step 1: Clone the Repository
 
 ```bash
-git clone https://github.com/indiser/ViralContent-factory.git
-cd ViralContent-factory
+git clone https://github.com/yourusername/viralcontent-factory.git
+cd viralcontent-factory
 ```
 
 ### Step 2: Install Python Dependencies
@@ -187,7 +211,11 @@ curl -fsSL https://deno.land/install.sh | sh
 Create a `.env` file in the project root:
 
 ```env
-# OpenRouter API (for LLM features)
+# LLM API Keys (at least one required, more = better failover)
+GROQ_API_KEY=your_groq_api_key_here
+CEREBRAS_API_KEY=your_cerebras_api_key_here
+GEMINI_API_KEY=your_gemini_api_key_here
+HUGGINGFACE_API_KEY=your_huggingface_api_key_here
 OPENROUTER_API_KEY=your_openrouter_api_key_here
 
 # Gmail SMTP (for notifications)
@@ -196,6 +224,8 @@ EMAIL_APP_PASS=your_gmail_app_password
 ```
 
 > **Note**: For Gmail, you need to generate an [App Password](https://support.google.com/accounts/answer/185833) (not your regular password)
+
+> **LLM Keys**: You only need ONE API key to start, but having multiple provides better reliability through automatic failover
 
 ### Step 5: Download Background Videos
 
@@ -243,6 +273,14 @@ python reminder.py
 
 This checks if 7+ videos are ready and moves them to `ready_to_upload/` folder.
 
+### Get Video Paths for Upload
+
+```bash
+python get_videopaths.py
+```
+
+Returns absolute paths of all videos in `ready_to_upload/` for batch upload scripts.
+
 ---
 
 ## 📊 Workflow Example
@@ -250,13 +288,14 @@ This checks if 7+ videos are ready and moves them to `ready_to_upload/` folder.
 ```
 1. [03:00 AM] Task Scheduler triggers run_factory.bat
 2. [03:00:05] Phase 1 scrapes r/AmItheAsshole
-3. [03:00:12] LLM generates viral hook: "Am I the jerk for refusing to attend my sister's wedding"
+3. [03:00:12] LLM Router tries Groq → generates viral hook
 4. [03:00:15] Gender detected: Female → Voice: en-US-AriaNeural
 5. [03:00:45] Phase 2 generates audio + word timestamps
 6. [03:01:30] Phase 3 renders 60-second vertical video
 7. [03:02:00] Cleanup removes temporary files
 8. [03:02:05] Reminder script checks inventory (3/7 videos)
 9. [Day 7] Email sent: "🟢 FACTORY ALERT: Weekly Batch Ready"
+10. [Manual] Run upload automation scripts
 ```
 
 ---
@@ -307,6 +346,15 @@ txt_clip = TextClip(
 )
 ```
 
+### Configure LLM Provider Priority
+
+Edit `llm_router.py`:
+
+```python
+CHEAP_PROVIDERS = [openrouter_chat, hf_chat, gemini_chat]
+STRONG_PROVIDERS = [groq_chat, cerebras_chat]
+```
+
 ---
 
 ## 🐛 Troubleshooting
@@ -326,6 +374,12 @@ txt_clip = TextClip(
 2. Generate an App Password
 3. Use the App Password in `.env`, not your regular password
 
+### Issue: "All LLM providers failed"
+**Solution**: 
+1. Check that at least one API key is valid in `.env`
+2. Verify API quotas haven't been exceeded
+3. Check internet connection
+
 ### Issue: "Word boundaries missing"
 **Solution**: The system automatically falls back to sentence-level timing. This is expected behavior for some voices
 
@@ -338,6 +392,7 @@ txt_clip = TextClip(
 - **Audio Quality**: 192kbps MP3
 - **Storage**: ~15-25MB per final video
 - **Success Rate**: 95%+ (with failover systems)
+- **LLM Failover**: <2 seconds between provider switches
 
 ---
 
@@ -348,12 +403,17 @@ txt_clip = TextClip(
 - ✅ Reddit scraping complies with API terms
 - ✅ All content is public domain (Reddit posts)
 - ✅ No personal information in generated videos
+- ✅ Multi-provider LLM routing prevents vendor lock-in
 
 ---
 
 ## 🚧 Roadmap
 
-- [ ] Multi-platform upload automation (TikTok, YouTube, Instagram APIs)
+- [x] Multi-provider LLM router with automatic failover
+- [x] Batch video management system
+- [ ] YouTube upload automation (in progress)
+- [ ] Instagram Reels upload automation (in progress)
+- [ ] TikTok API integration
 - [ ] A/B testing for hooks and thumbnails
 - [ ] Analytics dashboard (views, engagement tracking)
 - [ ] GPU-accelerated rendering (NVENC support)
@@ -385,7 +445,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - **Reddit API** - Content source
 - **Microsoft Edge TTS** - Neural voice synthesis
-- **OpenRouter** - LLM infrastructure
+- **Groq, Cerebras, Gemini, HuggingFace, OpenRouter** - LLM infrastructure
 - **MoviePy** - Video processing framework
 - **yt-dlp** - Video download utility
 
@@ -393,9 +453,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📞 Contact
 
-<!-- **Your Name** - [@yourtwitter](https://twitter.com/yourtwitter) - your.email@example.com -->
-
-**Project Link**: [[https://github.com/indiser/ViralContent-Factory](https://github.com/indiser/ViralContent-Factory.git)]
+**Project Link**: [https://github.com/yourusername/viralcontent-factory](https://github.com/yourusername/viralcontent-factory)
 
 ---
 
