@@ -216,14 +216,15 @@ def generate_viral_hook(title: str, story_text: str) -> str:
     context_chunk = story_text[:1000]
     
     system_prompt = (
-        "You are a ruthless viral copywriter for TikTok and YouTube Shorts. "
+        "You are a ruthless viral copywriter for TikTok, Intagram reels and YouTube Shorts. "
         "Read the following Reddit title and story. Your job is to rewrite the title into a highly engaging, "
         "dramatic, and aggressive hook that will stop people from scrolling. "
         "RULES: \n"
         "1. It MUST be under 12 words.\n"
-        "2. It MUST start with a strong phrase like 'Am I the jerk for...', 'I ruined...', 'My entitled...', etc.\n"
-        "3. DO NOT use hashtags, emojis, or quotation marks.\n"
-        "4. Output ONLY the hook. Absolutely no other text."
+        "2. DO NOT EVER start the hook with 'Am I the jerk' or 'Am I the asshole'. That is banned.\n"
+        "3. Use a variety of psychological triggers. Start directly with the action (e.g., 'I destroyed my...', 'My insane mother...', 'Why I refused to...', 'The biggest mistake I...').\n"
+        "4. DO NOT use hashtags, emojis, or quotation marks.\n"
+        "5. Output ONLY the hook. Absolutely no other text."
     )
     user_prompt = f"Title: {title}\n\nStory: {context_chunk}"
 
