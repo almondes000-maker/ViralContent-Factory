@@ -8,7 +8,7 @@ import html
 from dotenv import load_dotenv
 from langdetect import detect, LangDetectException
 from llm_router import chat_fast, chat_strong
-
+from datetime import datetime
 load_dotenv()
 
 script_dir=os.path.dirname(os.path.abspath(__file__))
@@ -186,7 +186,7 @@ def detect_gender_llm(title: str, story_text: str) -> str:
     
     # We only need the first ~1000 characters to get the context. 
     # Sending the whole story wastes tokens.
-    context_chunk = story_text[:1000]
+    context_chunk = story_text
     
     # The Prompt Engineering: Strict constraints.
     system_prompt = (
@@ -281,14 +281,16 @@ def fetch_brainrot_story(subreddit_name: str, existing_ids:set ) -> dict:
             print(f"Final Hook Selected: {winning_hook}")
             return {
                 "id" : id,
-                "original_title":original_title,
+                "original_title": original_title,
                 "title": title.replace("\n\n"," ").replace("\n"," "),
                 "hook": winning_hook, 
-                "original_story":original_story,
+                "original_story": original_story,
                 "story": story.replace("\n\n"," ").replace("\n"," ").replace('\"',"").replace("\\","").replace('/',""),
                 "gender": pov_gender,
-                'tags':dynamic_tags,
-                "url" : url
+                'tags': dynamic_tags,
+                "url" : url,
+                "time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                "posted": False
             }
             
     # If the loop finishes without returning, raise the alarm.
@@ -315,5 +317,3 @@ def load_from_local_database() -> dict:
             return {"id": item["id"], "title": item["title"], "story": item["story"]}
             
     raise ValueError("FATAL: Backlog is completely empty.")
-
-
