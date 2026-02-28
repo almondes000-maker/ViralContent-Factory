@@ -130,7 +130,7 @@ ViralContent-Factory/
 ├── 🤖 llm_router.py         # Multi-provider LLM failover system
 ├── 📥 yt_downloader.py      # Background footage downloader
 ├── 📧 reminder.py           # Batch management & email alerts
-├── 📤 yt_automation.py      # YouTube upload automation (WIP)
+├── 📤 yt_automation.py      # YouTube upload automation
 ├── 📱 insta_automation.py   # Instagram upload automation (WIP)
 ├── 🔧 get_videopaths.py     # Video path utility for batch processing
 ├── ⚙️ run_factory.bat       # Windows Task Scheduler entry point
@@ -175,7 +175,7 @@ ViralContent-Factory/
 ### Step 1: Clone the Repository
 
 ```bash
-git clone https://github.com/yourusername/viralcontent-factory.git
+git clone https://github.com/indiser/viralcontent-factory.git
 cd viralcontent-factory
 ```
 
