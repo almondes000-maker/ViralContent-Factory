@@ -143,6 +143,7 @@ AutoContent/
 ├── 📥 yt_downloader.py      # Background footage downloader (yt-dlp wrapper)
 ├── 📧 reminder.py           # Batch management & email alerts (7-video threshold)
 ├── 📤 yt_automation.py      # YouTube upload automation (OAuth setup required)
+├── 📱 ig_login.py           # Run this script and log into instagram only once (One-Time Run)
 ├── 📱 insta_automation.py   # Instagram upload automation (Graph API setup required)
 ├── 🔧 get_videopaths.py     # Video path utility for batch processing
 ├── ⚙️ run_factory.bat       # Windows Task Scheduler entry point (3 videos per run)
