@@ -56,7 +56,7 @@ def mark_as_posted(video_id):
     with open(scripts_path, "w", encoding="utf-8") as f:
         json.dump(scripts, f, indent=4, ensure_ascii=False)
 
-def upload_reel(driver, video_path: str, caption: str):
+def upload_reel(driver, video_path: str):
     """Upload a reel to Instagram via Selenium."""
     try:
         print(f"Current URL: {driver.current_url}")
@@ -169,21 +169,8 @@ if __name__ == "__main__":
                 metadata = get_video_metadata(video_id)
                 
                 if metadata:
-                    raw_tags = metadata["tags"]
-                    clean_tags = []
-                    for tag in raw_tags:
-                        if isinstance(tag, str):
-                            if len(tag.split()) <= 6 and len(tag) <= 35:
-                                clean_tags.append(tag)
-                    
-                    hashtag_string = ' '.join(['#' + tag.replace(' ', '') for tag in clean_tags])
-                    
-                    # caption = f"{metadata['hook']}\n\n{hashtag_string} #fyp #viral"
-                    caption = f"{contents}\n\n{hashtag_string} #fyp #viral"
-
-                    
                     print(f"Uploading: {filename}")
-                    if upload_reel(driver, video_path, caption):
+                    if upload_reel(driver, video_path):
                         mark_as_posted(video_id)
                         success_count += 1
                         print(f"✅ Uploaded: {video_id}\n")
@@ -198,4 +185,3 @@ if __name__ == "__main__":
         finally:
             print("Closing browser...")
             driver.quit()
-
