@@ -189,7 +189,7 @@ AutoContent/
 ### Step 1: Clone the Repository
 
 ```bash
-git clone https://github.com/yourusername/viralcontent-factory.git
+git clone https://github.com/indiser/ViralContent-Factory.git
 cd viralcontent-factory
 ```
 
@@ -547,7 +547,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📞 Contact
 
-**Project Link**: [https://github.com/yourusername/viralcontent-factory](https://github.com/yourusername/viralcontent-factory)
+**Project Link**: [https://github.com/indiser/ViralContent-Factory](https://github.com/indiser/ViralContent-Factory)
 
 ---
 
