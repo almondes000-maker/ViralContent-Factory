@@ -290,7 +290,13 @@ def fetch_brainrot_story(subreddit_name: str, existing_ids:set ) -> dict:
                 'tags': dynamic_tags,
                 "url" : url,
                 "time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                "posted": False
+                "posted_youtube": False,
+                "posted_instagram": False,
+                "posted_tiktok": False,
+                "posted_facebook": False,    # Future
+                "posted_snapchat": False,    # Future
+                "posted_twitter": False,     # Future
+                "posted_linkedin": False    
             }
             
     # If the loop finishes without returning, raise the alarm.
