@@ -8,3 +8,8 @@ groq
 openai
 google-genai
 huggingface_hub
+undetected_chromedriver
+selenium
+google-api-python-client 
+google-auth-oauthlib 
+google-auth-httplib2
