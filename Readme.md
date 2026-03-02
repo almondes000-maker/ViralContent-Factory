@@ -23,10 +23,10 @@
 
 ### 💡 What Makes This Special?
 
-- **🤖 Fully Autonomous**: Set it and forget it. The system runs daily via scheduled tasks
+- **🤖 Fully Autonomous**: Set it and forget it. The system runs via scheduled tasks (3 videos per batch)
 - **🧠 AI-Powered Intelligence**: Multi-provider LLM router with automatic failover across 5+ AI services
-- **🎯 Production-Ready**: Includes failover systems, cold storage backups, and email alerting
-- **⚡ Optimized Performance**: Multi-threaded rendering, smart caching, and resource management
+- **🎯 Production-Ready**: Includes failover systems, persistent database, and email alerting
+- **⚡ Optimized Performance**: Word-level subtitle sync, smart caching, and resource management
 - **📊 Scalable Architecture**: Modular phase-based design for easy extension and maintenance
 - **🔄 Smart LLM Routing**: Automatic failover between Groq, Cerebras, Gemini, HuggingFace, and OpenRouter
 
@@ -35,52 +35,60 @@
 ## ✨ Features
 
 ### 🔍 **Phase 1: Intelligent Content Acquisition**
-- **Multi-Source Scraping**: Waterfall system across 10+ high-engagement subreddits (AITA, TIFU, TrueOffMyChest, etc.)
+- **Multi-Source Scraping**: Waterfall system across 30+ high-engagement subreddits (AITA, TIFU, TrueOffMyChest, confessions, pettyrevenge, etc.)
 - **Smart Filtering**: 
   - Language detection (English-only)
-  - Optimal word count (120-200 words for 60-second videos)
-  - Duplicate prevention via persistent database
+  - Optimal word count (120-380 words for 60-180 second videos)
+  - Duplicate prevention via persistent JSON database
   - Automatic removal of deleted/removed posts
 - **AI Enhancement**:
   - Multi-provider LLM router with automatic quota management
   - Gender detection for voice matching (fast models)
   - Viral hook generation with creative reasoning (strong models)
-  - Slang/acronym normalization (AITA → "Am I the jerk", etc.)
+  - Hook A/B testing (AI-generated vs original title ranking)
+  - Dynamic SEO tag generation (5 keywords per video)
+  - Slang/acronym normalization (AITA → "Am I the jerk", 19F → "a 19 year old woman", etc.)
 - **Failover System**: Falls back to local cold storage if all live sources fail
-- **Upload Automation**: YouTube and Instagram automation modules (in development)
+- **Upload Automation**: YouTube and Instagram automation modules (setup required)
 
 ### 🎙️ **Phase 2: Professional Audio Synthesis**
 - **Edge TTS Integration**: Microsoft's neural voices for natural-sounding narration
-- **Dynamic Voice Selection**: Gender-matched voices (3 female variants, 1 male)
+- **Dynamic Voice Selection**: Gender-matched voices (3 female variants: Jenny/Michelle/Aria, 1 male: Christopher)
 - **Word-Level Timing**: Precise timestamp extraction for perfect subtitle synchronization
+- **Sync Offset System**: Configurable timing adjustment (-0.3s default) for perfect alignment
 - **Fallback Mechanisms**: Sentence-level heuristics if word boundaries fail
+- **JSON Export**: Word-by-word timing data saved for video compositor
 
 ### 🎥 **Phase 3: Viral Video Composition**
 - **9:16 Vertical Format**: Optimized for mobile-first platforms
 - **Dynamic Background Selection**: Random gameplay footage (Minecraft, GTA 5)
 - **Animated Subtitles**: 
   - Impact font with stroke for maximum readability
-  - 2-word chunks with pop-in animations
-  - Mathematically synced to audio timestamps
+  - 3-word chunks with pop-in animations
+  - Mathematically synced to word-level audio timestamps
+  - Configurable sync offset for perfect timing
 - **Smart Cropping**: Automatic center-crop from 16:9 to 9:16
 - **Random Start Points**: Prevents repetitive background footage
+- **Test Mode**: 10-second preview rendering for quick testing
 
 ### 🤖 **LLM Router System**
 - **Multi-Provider Architecture**: Supports 5 AI providers with automatic failover
 - **Intelligent Task Routing**:
-  - Fast models (Gemini, HuggingFace, OpenRouter) for classification and tagging
+  - Fast models (OpenRouter, HuggingFace, Gemini) for classification and tagging
   - Strong models (Groq, Cerebras) for creative writing and reasoning
-- **Quota Management**: Automatically detects rate limits and switches providers
-- **Error Recovery**: Retry logic with exponential backoff
+- **Quota Management**: Automatically detects rate limits (429, 400 errors) and switches providers
+- **Error Recovery**: Retry logic with provider fallback chain
 - **Cost Optimization**: Routes cheap tasks to free tiers, expensive tasks to premium models
 
 ### 🔧 **Production Features**
-- **Automated Cleanup**: Removes temporary files after each run
-- **Batch Management**: Collects 7 videos before triggering upload alert
-- **Email Notifications**: Gmail SMTP alerts when batch is ready
-- **Sanitized Filenames**: OS-safe naming with ID-based uniqueness
+- **Automated Cleanup**: Removes temporary audio/JSON files after each run
+- **Batch Management**: Collects 7+ videos before triggering upload alert
+- **Email Notifications**: Gmail SMTP alerts when batch threshold reached
+- **Sanitized Filenames**: OS-safe naming with Reddit ID-based uniqueness
 - **Error Handling**: Comprehensive try-catch blocks with detailed logging
 - **Video Path Utilities**: Batch processing helpers for upload automation
+- **Persistent Database**: JSON-based story tracking with "used" flag system
+- **Sleep Prevention**: Windows execution state management to prevent system sleep
 
 ---
 
@@ -90,6 +98,7 @@
 ┌─────────────────────────────────────────────────────────────┐
 │                    MAIN PIPELINE ORCHESTRATOR                │
 │                     (main_pipeline.py)                       │
+│                  Prevents system sleep during run            │
 └────────────┬────────────────────────────────────────────────┘
              │
     ┌────────┴────────┐
@@ -98,12 +107,14 @@
 ┌─────────┐      ┌─────────┐
 │ Phase 1 │──────│ Phase 2 │
 │ Scraper │      │  Audio  │
+│ +AI LLM │      │ +Timing │
 └────┬────┘      └────┬────┘
      │                │
      │                ▼
      │           ┌─────────┐
      │           │ Phase 3 │
      └───────────│  Video  │
+                 │Compositor│
                  └────┬────┘
                       │
                       ▼
@@ -116,29 +127,32 @@
               ┌───────────────┐
               │   Upload      │
               │  Automation   │
+              │  (Manual/API) │
               └───────────────┘
 ```
 
 ### 📁 Project Structure
 
 ```
-ViralContent-Factory/
-├── 📜 main_pipeline.py      # Orchestrator - coordinates all phases
-├── 🔍 phase1.py             # Content acquisition & AI processing
-├── 🎙️ phase2.py             # Audio synthesis & timestamp extraction
-├── 🎥 phase3.py             # Video composition & rendering
-├── 🤖 llm_router.py         # Multi-provider LLM failover system
-├── 📥 yt_downloader.py      # Background footage downloader
-├── 📧 reminder.py           # Batch management & email alerts
-├── 📤 yt_automation.py      # YouTube upload automation
-├── 📱 insta_automation.py   # Instagram upload automation (WIP)
+AutoContent/
+├── 📜 main_pipeline.py      # Orchestrator - coordinates all phases, prevents sleep
+├── 🔍 phase1.py             # Content acquisition & AI processing (30+ subreddits)
+├── 🎙️ phase2.py             # Audio synthesis & word-level timestamp extraction
+├── 🎥 phase3.py             # Video composition & subtitle rendering
+├── 🤖 llm_router.py         # Multi-provider LLM failover system (5 providers)
+├── 📥 yt_downloader.py      # Background footage downloader (yt-dlp wrapper)
+├── 📧 reminder.py           # Batch management & email alerts (7-video threshold)
+├── 📤 yt_automation.py      # YouTube upload automation (OAuth setup required)
+├── 📱 insta_automation.py   # Instagram upload automation (Graph API setup required)
 ├── 🔧 get_videopaths.py     # Video path utility for batch processing
-├── ⚙️ run_factory.bat       # Windows Task Scheduler entry point
+├── ⚙️ run_factory.bat       # Windows Task Scheduler entry point (3 videos per run)
 ├── 📦 requirements.txt      # Python dependencies
-├── 🗄️ scripts.json          # Persistent story database
-├── 🎬 downloads/            # Background video assets
-├── 📤 reels/                # Final rendered videos
-└── 📦 ready_to_upload/      # Batched videos ready for upload
+├── 🗄️ scripts.json          # Persistent story database with "used" tracking
+├── 📝 hidden_depedencies.txt # System dependency checklist
+├── 📄 TrendingDescription.txt # Sample trending content reference
+├── 🎬 downloads/            # Background video assets (2 videos included)
+├── 📤 reels/                # Final rendered videos (staging area)
+└── 📦 ready_to_upload/      # Batched videos ready for upload (7 videos)
 ```
 
 ---
@@ -149,13 +163,13 @@ ViralContent-Factory/
 |----------|-----------|---------|
 | **Language** | Python 3.11+ | Core runtime |
 | **AI/LLM** | Multi-Provider Router | Groq, Cerebras, Gemini, HuggingFace, OpenRouter |
-| **Voice Synthesis** | Edge-TTS | Neural text-to-speech |
+| **Voice Synthesis** | Edge-TTS | Neural text-to-speech (streaming) |
 | **Video Processing** | MoviePy 1.0.3 | Compositing & rendering |
-| **Image Processing** | ImageMagick | Text rendering backend |
-| **Web Scraping** | Requests | Reddit API interaction |
+| **Image Processing** | ImageMagick | Text rendering backend for subtitles |
+| **Web Scraping** | Requests | Reddit JSON API interaction |
 | **NLP** | langdetect | Language filtering |
 | **Video Download** | yt-dlp | Background footage acquisition |
-| **Email** | smtplib | Gmail notifications |
+| **Email** | smtplib | Gmail SMTP notifications |
 | **Environment** | python-dotenv | Secure credential management |
 
 ---
@@ -169,13 +183,13 @@ ViralContent-Factory/
 - Python 3.11 or higher
 - FFmpeg (for audio/video processing)
 - ImageMagick (for subtitle rendering)
-- Deno or Node.js (for yt-dlp)
+- Deno or Node.js (for yt-dlp YouTube signature extraction)
 ```
 
 ### Step 1: Clone the Repository
 
 ```bash
-git clone https://github.com/indiser/viralcontent-factory.git
+git clone https://github.com/yourusername/viralcontent-factory.git
 cd viralcontent-factory
 ```
 
@@ -184,6 +198,18 @@ cd viralcontent-factory
 ```bash
 pip install -r requirements.txt
 ```
+
+**Dependencies installed:**
+- requests
+- python-dotenv
+- langdetect
+- edge-tts
+- moviepy==1.0.3
+- yt-dlp
+- groq
+- openai
+- google-genai
+- huggingface_hub
 
 ### Step 3: Install System Dependencies
 
@@ -218,7 +244,7 @@ GEMINI_API_KEY=your_gemini_api_key_here
 HUGGINGFACE_API_KEY=your_huggingface_api_key_here
 OPENROUTER_API_KEY=your_openrouter_api_key_here
 
-# Gmail SMTP (for notifications)
+# Gmail SMTP (for batch notifications)
 EMAIL_USER=your_email@gmail.com
 EMAIL_APP_PASS=your_gmail_app_password
 ```
@@ -236,6 +262,10 @@ python yt_downloader.py "https://youtube.com/watch?v=GTA5_VIDEO_ID"
 
 Or manually place 9:16 or 16:9 gameplay videos in the `downloads/` folder.
 
+**Current background videos:**
+- Insanely Crazy GTA 5 Mega Ramp Gameplay (4K 60fps)
+- Minecraft Parkour Gameplay No Copyright (4K)
+
 ### Step 6: Configure ImageMagick Path (Windows Only)
 
 Edit `phase3.py` line 5 to match your ImageMagick installation:
@@ -244,26 +274,38 @@ Edit `phase3.py` line 5 to match your ImageMagick installation:
 os.environ["IMAGEMAGICK_BINARY"] = r"C:\Program Files\ImageMagick-7.1.2-Q16-HDRI\magick.exe"
 ```
 
+### Step 7: Configure Batch Script Path (Windows Only)
+
+Edit `run_factory.bat` lines 5 and 17 to match your project location and Python installation:
+
+```batch
+cd /d "C:\Users\YOUR_USERNAME\Desktop\AutoContent"
+"C:\Path\To\Your\python.exe" main_pipeline.py
+```
+
 ---
 
 ## 🎯 Usage
 
-### Manual Execution
+### Manual Execution (Single Video)
 
 ```bash
 python main_pipeline.py
 ```
 
-### Automated Daily Execution (Windows)
+### Automated Batch Execution (Windows)
 
 1. Open **Task Scheduler**
 2. Create a new task:
-   - **Trigger**: Daily at 3:00 AM
+   - **Trigger**: Daily at 3:00 AM (or your preferred time)
    - **Action**: Run `run_factory.bat`
 3. The system will automatically:
-   - Generate 1 video per day
-   - Collect 7 videos per week
-   - Send email alert when batch is ready
+   - Generate 3 videos per run (configurable in batch script)
+   - Collect videos until 7+ are ready
+   - Send email alert when batch threshold is reached
+
+**Batch script configuration:**
+- Edit `run_factory.bat` line 9 to change video count: `FOR /L %%A IN (1,1,3)` (change 3 to desired count)
 
 ### Batch Management
 
@@ -287,15 +329,19 @@ Returns absolute paths of all videos in `ready_to_upload/` for batch upload scri
 
 ```
 1. [03:00 AM] Task Scheduler triggers run_factory.bat
-2. [03:00:05] Phase 1 scrapes r/AmItheAsshole
-3. [03:00:12] LLM Router tries Groq → generates viral hook
-4. [03:00:15] Gender detected: Female → Voice: en-US-AriaNeural
-5. [03:00:45] Phase 2 generates audio + word timestamps
-6. [03:01:30] Phase 3 renders 60-second vertical video
-7. [03:02:00] Cleanup removes temporary files
-8. [03:02:05] Reminder script checks inventory (3/7 videos)
-9. [Day 7] Email sent: "🟢 FACTORY ALERT: Weekly Batch Ready"
-10. [Manual] Run upload automation scripts
+2. [03:00:05] Phase 1 scrapes random subreddit from 30+ sources
+3. [03:00:12] LLM Router tries OpenRouter → generates viral hook
+4. [03:00:15] Gender detected: Female → Voice: en-US-AriaNeural (random from 3 variants)
+5. [03:00:18] Hook ranking: AI vs Original → Winner selected
+6. [03:00:22] SEO tags generated: ["reddit", "storytime", "drama", ...]
+7. [03:00:45] Phase 2 generates audio + word-level timestamps
+8. [03:01:30] Phase 3 renders vertical video with animated subtitles
+9. [03:02:00] Cleanup removes temporary audio/JSON files
+10. [03:02:05] Loop repeats 2 more times (3 videos total per run)
+11. [03:06:15] Reminder script checks inventory (9/7 videos)
+12. [03:06:20] Email sent: "🟢 FACTORY ALERT: Weekly Batch Ready"
+13. [03:06:25] 9 videos moved to ready_to_upload/ folder
+14. [Manual] Run upload automation scripts or manual upload
 ```
 
 ---
@@ -304,55 +350,90 @@ Returns absolute paths of all videos in `ready_to_upload/` for batch upload scri
 
 ### Add More Subreddits
 
-Edit `phase1.py`:
+Edit `phase1.py` lines 30-65:
 
 ```python
 SUBREDDITS = [
     "AmItheAsshole",
+    "AITAH",
     "YourNewSubreddit",  # Add here
 ]
 ```
 
+**Current subreddits (30+):**
+AmItheAsshole, AITAH, TrueOffMyChest, confessions, confession, tifu, pettyrevenge, entitledparents, MaliciousCompliance, EntitledPeople, relationships, relationship_advice, Vent, stories, moraldilemmas, self, PointlessStories, TwoHotTakes, dating, offmychest, UnsentLetters, SeriousConversation, Adulting, lonely, BreakUps, TalesFromTheFrontDesk, legaladvice, RBI, UnresolvedMysteries, Glitch_in_the_Matrix, raisedbynarcissists, dadjokes, Jokes
+
 ### Change Voice Models
 
-Edit `phase2.py`:
+Edit `phase2.py` lines 6-10:
 
 ```python
 WOMAN_VOICE_LIST = [
     "en-US-JennyNeural",
+    "en-US-MichelleNeural",
+    "en-US-AriaNeural",
     "en-GB-SoniaNeural",  # Add British accent
 ]
 ```
+
+Male voice is set on line 19: `"en-US-ChristopherNeural"`
 
 ### Adjust Video Length
 
 Edit `phase1.py` line 175:
 
 ```python
-if 120 < len(words) < 200:  # Change word count range
+if 120 < len(words) < 380:  # Change word count range (current: ~60-180 seconds)
 ```
 
 ### Modify Subtitle Style
 
-Edit `phase3.py` lines 50-60:
+Edit `phase3.py` lines 33-44:
 
 ```python
 txt_clip = TextClip(
     chunk_text,
-    font="Arial",           # Change font
-    fontsize=100,           # Increase size
-    color="yellow",         # Change color
-    stroke_width=8,         # Thicker outline
+    font="Impact",          # Change font
+    fontsize=85,            # Adjust size
+    color="white",          # Change color
+    stroke_color="black",   # Outline color
+    stroke_width=5,         # Outline thickness
+    method="caption",
+    size=(video_width * 0.9, None)
 )
+```
+
+### Adjust Subtitle Chunk Size
+
+Edit `phase3.py` line 20:
+
+```python
+chunk_size = 3  # Words per subtitle (current: 3 words)
+```
+
+### Adjust Audio Sync Timing
+
+If subtitles appear too early or late, edit `phase2.py` line 15:
+
+```python
+SYNC_OFFSET = -0.3  # Negative = earlier, Positive = later
 ```
 
 ### Configure LLM Provider Priority
 
-Edit `llm_router.py`:
+Edit `llm_router.py` lines 125-127:
 
 ```python
 CHEAP_PROVIDERS = [openrouter_chat, hf_chat, gemini_chat]
 STRONG_PROVIDERS = [groq_chat, cerebras_chat]
+```
+
+### Enable Test Mode (10-second preview)
+
+Edit `main_pipeline.py` line 18:
+
+```python
+TEST_MODE = True  # Renders only first 10 seconds
 ```
 
 ---
@@ -363,10 +444,10 @@ STRONG_PROVIDERS = [groq_chat, cerebras_chat]
 **Solution**: Update the path in `phase3.py` line 5 to match your installation
 
 ### Issue: "No viable stories found"
-**Solution**: The subreddit may have no posts matching criteria. The system will automatically try the next subreddit
+**Solution**: The subreddit may have no posts matching criteria. The system will automatically try the next subreddit in the randomized list
 
 ### Issue: "FFmpeg not found"
-**Solution**: Ensure FFmpeg is in your system PATH. Run `ffmpeg -version` to verify
+**Solution**: Ensure FFmpeg is in your system PATH. Run `ffmpeg -version` to verify. The `yt_downloader.py` script includes dependency checks
 
 ### Issue: "Email sending failed"
 **Solution**: 
@@ -379,20 +460,27 @@ STRONG_PROVIDERS = [groq_chat, cerebras_chat]
 1. Check that at least one API key is valid in `.env`
 2. Verify API quotas haven't been exceeded
 3. Check internet connection
+4. The router automatically tries all 5 providers before failing
 
 ### Issue: "Word boundaries missing"
 **Solution**: The system automatically falls back to sentence-level timing. This is expected behavior for some voices
+
+### Issue: "yt-dlp download fails"
+**Solution**: Install Deno or Node.js for YouTube signature extraction. The script checks dependencies automatically
 
 ---
 
 ## 📈 Performance Metrics
 
-- **Average Runtime**: 2-3 minutes per video
-- **Video Quality**: 1080x1920 @ 30fps
-- **Audio Quality**: 192kbps MP3
+- **Average Runtime**: 2-3 minutes per video (single-threaded)
+- **Batch Runtime**: ~6-9 minutes for 3 videos (run_factory.bat default)
+- **Video Quality**: 1080x1920 @ 30fps (9:16 vertical)
+- **Audio Quality**: Edge TTS neural voices (streaming)
 - **Storage**: ~15-25MB per final video
-- **Success Rate**: 95%+ (with failover systems)
+- **Success Rate**: 95%+ (with multi-subreddit + LLM failover)
 - **LLM Failover**: <2 seconds between provider switches
+- **Subtitle Sync**: ±0.3s accuracy with configurable offset
+- **Content Sources**: 30+ subreddits with randomized selection
 
 ---
 
@@ -409,12 +497,18 @@ STRONG_PROVIDERS = [groq_chat, cerebras_chat]
 
 ## 🚧 Roadmap
 
-- [x] Multi-provider LLM router with automatic failover
-- [x] Batch video management system
-- [ ] YouTube upload automation (in progress)
-- [ ] Instagram Reels upload automation (in progress)
-- [ ] TikTok API integration
-- [ ] A/B testing for hooks and thumbnails
+- [x] Multi-provider LLM router with automatic failover (5 providers)
+- [x] Batch video management system (7-video threshold)
+- [x] Word-level subtitle synchronization with timing offset
+- [x] Hook A/B testing (AI vs Original title ranking)
+- [x] Dynamic SEO tag generation
+- [x] Gender-based voice selection
+- [x] Automated cleanup system
+- [x] Email notification system
+- [ ] YouTube upload automation (OAuth setup required)
+- [ ] Instagram Reels upload automation 
+- [ ] TikTok upload automation (no official API - Selenium needed)
+- [ ] Thumbnail generation with text overlay
 - [ ] Analytics dashboard (views, engagement tracking)
 - [ ] GPU-accelerated rendering (NVENC support)
 - [ ] Cloud deployment (AWS Lambda + S3)
