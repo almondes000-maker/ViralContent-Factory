@@ -37,7 +37,7 @@ def get_video_metadata(video_id):
         scripts = json.load(f)
     
     for script in scripts:
-        if script["posted"] == True:
+        if script["posted_youtube"] == True:
             continue
         if script["id"] == video_id:
             return script
@@ -50,7 +50,7 @@ def mark_as_posted(video_id):
         
     for script in scripts:
         if script["id"] == video_id:
-            script["posted"] = True
+            script["posted_youtube"] = True
             break
             
     with open(scripts_path, "w", encoding="utf-8") as f:
@@ -139,8 +139,7 @@ if __name__ == "__main__":
                     success_count += 1
                 print()
             else:
-                print(f"⚠️ No metadata found for {video_id}, skipping\n")
+                print(f"⚠️ Already Posted {video_id}, skipping\n")
         
         print(f"\n{'='*50}")
         print(f"Upload complete: {success_count}/{len(video_files)} successful")
-
