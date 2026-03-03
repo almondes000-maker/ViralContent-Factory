@@ -177,7 +177,7 @@ if __name__ == "__main__":
                     else:
                         print(f"❌ Failed: {video_id}\n")
                 else:
-                    print(f"⚠️ No metadata found for {video_id}, skipping\n")
+                    print(f"⚠️ Already Posted {video_id}, skipping\n")
             
             print(f"\n{'='*50}")
             print(f"Upload complete: {success_count}/{len(video_files)} successful")
