@@ -113,6 +113,8 @@ def upload_video(file_path, metadata):
         return True
     except HttpError as e:
         print(f"❌ Upload failed for {metadata['id']}: {e}")
+        if 'uploadLimitExceeded' in str(e):
+            return None 
         return False
 
 if __name__ == "__main__":
@@ -135,8 +137,12 @@ if __name__ == "__main__":
             
             if metadata:
                 print(f"Uploading: {filename}")
-                if upload_video(video_path, metadata):
-                    success_count += 1
+                result=upload_video(video_path, metadata)
+                if result is None:
+                    print("⚠️ Upload quota exceeded. Stopping uploads.")
+                    break
+                elif result:
+                    success_count+=1
                 print()
             else:
                 print(f"⚠️ Already Posted {video_id}, skipping\n")
