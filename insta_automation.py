@@ -9,6 +9,15 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.keys import Keys
 import pyperclip
+import ctypes
+
+def prevent_sleep():
+    if os.name == 'nt':
+        try:
+            ctypes.windll.kernel32.SetThreadExecutionState(0x80000000 | 0x00000001)
+        except: pass
+
+prevent_sleep()
 
 script_path = os.path.dirname(os.path.abspath(__file__))
 scripts_path = os.path.join(script_path, "scripts.json")
