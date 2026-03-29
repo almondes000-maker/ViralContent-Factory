@@ -7,6 +7,16 @@ from googleapiclient.http import MediaFileUpload
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 import pickle
+import ctypes
+
+
+def prevent_sleep():
+    if os.name == 'nt':
+        try:
+            ctypes.windll.kernel32.SetThreadExecutionState(0x80000000 | 0x00000001)
+        except: pass
+
+prevent_sleep()
 
 SCOPES = ["https://www.googleapis.com/auth/youtube.upload"]
 script_path=os.path.dirname(os.path.abspath(__file__))
