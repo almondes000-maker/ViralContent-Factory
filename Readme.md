@@ -549,6 +549,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 📞 Contact
 
 **Project Link**: [https://github.com/indiser/ViralContent-Factory](https://github.com/indiser/ViralContent-Factory)
+**Email**: indiser01@gmail.com
 
 ---
 
