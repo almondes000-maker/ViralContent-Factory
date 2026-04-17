@@ -1,5 +1,5 @@
 import os
-import pysrt
+# import pysrt
 import json
 
 # 1. THE OVERRIDE MUST HAPPEN BEFORE MOVIEPY INITIALIZES
