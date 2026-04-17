@@ -26,7 +26,6 @@ if os.path.exists(file_path):
             print("WARNING: Database corrupted. Starting fresh.")
 
 
-OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY")
 LIMIT = 1000
 # 1. Define your fallback hierarchy
 SUBREDDITS = [
