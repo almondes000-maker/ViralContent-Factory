@@ -80,7 +80,7 @@ def cerebras_chat(msgs):
     if not cerebras_client:
         raise RuntimeError("Cerebras key missing")
     r = cerebras_client.chat.completions.create(
-        model="llama-3.3-70b",
+        model="gpt-oss-120b",
         messages=msgs
     )
     return r.choices[0].message.content
