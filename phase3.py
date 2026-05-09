@@ -1,6 +1,15 @@
 import os
 # import pysrt
 import json
+import ctypes
+
+def prevent_sleep():
+    if os.name == 'nt':
+        try:
+            ctypes.windll.kernel32.SetThreadExecutionState(0x80000000 | 0x00000001)
+        except: pass
+
+prevent_sleep()
 
 # 1. THE OVERRIDE MUST HAPPEN BEFORE MOVIEPY INITIALIZES
 os.environ["IMAGEMAGICK_BINARY"] = r"C:\Program Files\ImageMagick-7.1.2-Q16-HDRI\magick.exe"
@@ -20,7 +29,7 @@ def generate_subtitle_clips(json_path: str, video_width: int, video_height: int)
         words_data = json.load(f)
         
     sub_clips = []
-    chunk_size = 2 # 2 words per pop-up
+    chunk_size = 3 # 2 words per pop-up
     
     for i in range(0, len(words_data), chunk_size):
         chunk = words_data[i:i+chunk_size]
@@ -45,8 +54,22 @@ def generate_subtitle_clips(json_path: str, video_width: int, video_height: int)
         
         txt_clip = txt_clip.set_start(start_time).set_end(end_time).set_position(("center", video_height * 0.35))
         txt_clip = txt_clip.fx(vfx.resize, lambda t: 1 + 0.2 * max(0, (0.1 - t) * 10))
+
+        # txt_clip = TextClip(
+        #     chunk_text,
+        #     font="Impact",
+        #     fontsize=110,              # Bigger
+        #     color="white",            # More eye-catching than white
+        #     stroke_color="black",
+        #     stroke_width=8,            # Thicker outline
+        #     method="caption", 
+        #     size=(video_width * 0.85, None)  # Slightly narrower for padding
+        # )
+
+        # txt_clip = txt_clip.set_start(start_time).set_end(end_time).set_position(("center", video_height * 0.70))
+        # txt_clip = txt_clip.fx(vfx.resize, lambda t: 1 + 0.4 * max(0, (0.15 - t) * 6.67))  # Stronger pop
+
         sub_clips.append(txt_clip)
-            
     return sub_clips
 
 def build_viral_short(background_path: str, audio_path: str, json_path: str, output_path: str, test_mode: bool = False):
