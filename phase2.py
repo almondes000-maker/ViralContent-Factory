@@ -2,6 +2,16 @@ import asyncio
 import edge_tts
 import random
 import json
+import ctypes
+import os
+
+def prevent_sleep():
+    if os.name == 'nt':
+        try:
+            ctypes.windll.kernel32.SetThreadExecutionState(0x80000000 | 0x00000001)
+        except: pass
+
+prevent_sleep()
 
 WOMAN_VOICE_LIST=[
     "en-US-JennyNeural",
