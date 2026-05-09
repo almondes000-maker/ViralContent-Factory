@@ -9,7 +9,16 @@ from dotenv import load_dotenv
 from langdetect import detect, LangDetectException
 from llm_router import chat_fast, chat_strong
 from datetime import datetime
+import ctypes
 load_dotenv()
+
+def prevent_sleep():
+    if os.name == 'nt':
+        try:
+            ctypes.windll.kernel32.SetThreadExecutionState(0x80000000 | 0x00000001)
+        except: pass
+
+prevent_sleep()
 
 script_dir=os.path.dirname(os.path.abspath(__file__))
 file_path=os.path.join(script_dir,"scripts.json")
@@ -322,3 +331,5 @@ def load_from_local_database() -> dict:
             return {"id": item["id"], "title": item["title"], "story": item["story"]}
             
     raise ValueError("FATAL: Backlog is completely empty.")
+
+
