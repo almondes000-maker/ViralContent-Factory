@@ -34,9 +34,10 @@ def get_stealth_browser():
     options.add_argument(f"--user-data-dir={profile_path}")
     options.add_argument("--log-level=3")
     options.add_argument("--window-size=1280,800")
+    options.add_argument("--headless=new")
     
     print("Launching stealth browser...")
-    driver = uc.Chrome(options=options, version_main=145)
+    driver = uc.Chrome(options=options, version_main=145, headless = True)
     time.sleep(2)
     return driver
 
