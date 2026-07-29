@@ -1,15 +1,17 @@
-import requests
+# import requests
+from curl_cffi import requests
 import json
 import random
 import os
 import re
-import asyncio
 import html
 from dotenv import load_dotenv
 from langdetect import detect, LangDetectException
 from llm_router import chat_fast, chat_strong
 from datetime import datetime
 import ctypes
+import time
+from requests.exceptions import RequestException
 load_dotenv()
 
 def prevent_sleep():
@@ -75,7 +77,7 @@ SUBREDDITS = [
 ]
 
 headers = {
-    "User-Agent": "Python:BrainrotBot:v1.1 (by /u/YourRedditUsername)"
+    "User-Agent": "windows:viral.content.bot:v2.0 (by /u/banana_737)"
 }
 
 
@@ -249,10 +251,18 @@ def generate_viral_hook(title: str, story_text: str) -> str:
         return title
     
 def fetch_brainrot_story(subreddit_name: str, existing_ids:set ) -> dict:
-    api_url = f"https://www.reddit.com/r/{subreddit_name}/top.json?t=day&limit={LIMIT}"
-    response = requests.get(url=api_url, headers=headers)
-    response.raise_for_status()
-    data = response.json()
+    try:
+        api_url = f"https://www.reddit.com/r/{subreddit_name}/top.json?t=day&limit={LIMIT}"
+        time.sleep(5);
+        response = requests.get(url=api_url, impersonate="chrome", timeout=10)
+        response.raise_for_status()
+        data = response.json()
+    except requests.exceptions.HTTPError as e:
+        print(f"HTTP Error on {subreddit_name}: {e}")
+        raise RuntimeError(f"HTTP Error: {e}")
+    except RequestException as e:
+        print(f"Network drop on {subreddit_name}: {e}")
+        raise RuntimeError(f"Network Error: {e}")
 
     for child in data['data']['children']:
         id = child['data']['id']
@@ -319,6 +329,11 @@ def load_from_local_database() -> dict:
         
     with open(file_path, "r", encoding="UTF-8") as filp:
         database = json.load(filp)
+    
+    if all(item.get("used", True) for item in database):
+        print("WARNING: Backlog exhausted. Resetting flags.")
+        for item in database:
+            item["used"] = False
         
     for item in database:
         if item.get("used") is False:
