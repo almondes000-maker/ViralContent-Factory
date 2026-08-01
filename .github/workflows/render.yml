@@ -42,6 +42,19 @@ jobs:
 
       - name: Send Video to Telegram
         run: |
+          RESPONSE=$(curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendVideo" \
+               -F chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" \
+               -F video=@output.mp4 \
+               -F caption="$(cat caption.txt)")
+          echo "Respon dari Telegram: $RESPONSE"
+          ${{ github.event.client_payload.caption }}
+          EOF
+
+      - name: Render Video
+        run: python run_factory.py
+
+      - name: Send Video to Telegram
+        run: |
           curl -F chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" \
                -F video=@output.mp4 \
                -F caption="$(cat caption.txt)" \
