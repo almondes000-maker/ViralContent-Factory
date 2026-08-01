@@ -26,16 +26,14 @@ jobs:
         run: |
           pip install "moviepy<2.0.0" requests edge-tts
 
-      - name: Prepare Audio & Data
+      - name: Generate Audio & Prepare Data
         run: |
-          cat << 'EOF' > b64_audio.txt
-          ${{ github.event.client_payload.audio_base64 }}
-          EOF
-          base64 -d b64_audio.txt > voice.mp3
-          
           cat << 'EOF' > caption.txt
           ${{ github.event.client_payload.caption }}
           EOF
+          
+          # Generate voice audio directly on GitHub Runner
+          edge-tts --text "${{ github.event.client_payload.caption }}" --write-media voice.mp3 --voice ${{ github.event.client_payload.voice }}
 
       - name: Render Video
         run: python run_factory.py
