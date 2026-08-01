@@ -1,0 +1,62 @@
+name: Generate Viral Video
+
+on:
+  repository_dispatch:
+    types: [generate_video]
+
+jobs:
+  build-and-render:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install System Dependencies
+        run: |
+          sudo apt update && sudo apt install -y ffmpeg imagemagick fonts-freefont-ttf
+          sudo sed -i 's/<policy domain="path" rights="none" pattern="@\*" \/>/<policy domain="path" rights="read | write" pattern="@\*" \/>/' /etc/ImageMagick-6/policy.xml
+
+      - name: Install Python Requirements
+        run: |
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          pip install edge-tts moviepy requests
+
+      - name: Prepare Input Data
+        run: |
+          cat << 'EOF' > b64_audio.txt
+          ${{ github.event.client_payload.audio_base64 }}
+          EOF
+          base64 -d b64_audio.txt > voice.mp3
+          
+          cat << 'EOF' > caption.txt
+          ${{ github.event.client_payload.caption }}
+          EOF
+
+      - name: Run Video Generator
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+        run: |
+          if [ -f main.py ]; then
+            python main.py
+          elif [ -f render.py ]; then
+            python render.py
+          fi
+
+      - name: Send Video to Telegram
+        run: |
+          # Mencari file mp4 hasil render
+          VIDEO_FILE=$(ls *.mp4 2>/dev/null | head -n 1)
+          if [ -z "$VIDEO_FILE" ]; then
+            VIDEO_FILE="output.mp4"
+          fi
+          
+          curl -F chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" \
+               -F video=@"$VIDEO_FILE" \
+               -F caption="$(cat caption.txt)" \
+               https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendVideo
