@@ -26,14 +26,25 @@ jobs:
         run: |
           pip install "moviepy<2.0.0" requests edge-tts
 
-      - name: Generate Audio & Prepare Data
+      - name: Prepare Audio & Data via Python
+        env:
+          CAPTION_TEXT: ${{ github.event.client_payload.caption }}
+          VOICE_NAME: ${{ github.event.client_payload.voice }}
         run: |
-          cat << 'EOF' > caption.txt
-          ${{ github.event.client_payload.caption }}
-          EOF
-          
-          # Generate voice audio directly on GitHub Runner
-          edge-tts --text "${{ github.event.client_payload.caption }}" --write-media voice.mp3 --voice ${{ github.event.client_payload.voice }}
+          python -c "
+          import os, subprocess
+
+          caption = os.environ.get('CAPTION_TEXT', '')
+          voice = os.environ.get('VOICE_NAME', 'en-US-ChristopherNeural')
+
+          # Simpan caption.txt dengan aman tanpa bentrok karakter
+          with open('caption.txt', 'w', encoding='utf-8') as f:
+              f.write(caption)
+
+          # Buat audio voice.mp3
+          cmd = ['edge-tts', '--text', caption, '--write-media', 'voice.mp3', '--voice', voice]
+          subprocess.run(cmd, check=True)
+          "
 
       - name: Render Video
         run: python run_factory.py
